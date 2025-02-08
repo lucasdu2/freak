@@ -18,7 +18,7 @@ type charset =
 type regex =
   | CharSet of charset
   | Not of charset
-  | And of charset
+  | And of charset * charset
   | StartsWith of regex
   | EndsWith of regex
   | Concat of regex * regex
