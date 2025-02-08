@@ -1,8 +1,13 @@
 exception Grammar_error of string
 
 type charset =
-  | Char | Empty | Any
-  | Digit | AnyLetter | CapLetter | LowLetter
+  | Char
+  | Empty
+  | Any
+  | Digit
+  | AnyLetter
+  | CapLetter
+  | LowLetter
 
 (** [regex] is a type that represents the grammar of the regular expressions
     we can generate. We stick to extended regular expressions, without certain
@@ -24,45 +29,66 @@ type regex =
   | RepeatAtLeast of regex * int
   | RepeatRange of regex * int * int
 
-module StringSet = Set.Make(String)
-
-let symbols =
-  ["<charset>"; "<not>"; "<and>"; "<startswith>"; "<endswith>"; "<or>";
-   "<concat>"; "<optional>"; "<kleenestar>"; "<repeat>"; "<repeatatleast>";
-   "<repeatrange>"]
+type symbols =
+  | CharSet'
+  | Not'
+  | And'
+  | StartsWith'
+  | EndsWith'
+  | Concat'
+  | Or'
+  | Optional'
+  | KleeneStar'
+  | Repeat'
+  | RepeatAtLeast'
+  | RepeatRange'
 
 let symbol_of_regex = function
-  | CharSet _             -> "<charset>"
-  | Not _                 -> "<not>"
-  | And _                 -> "<and>"
-  | StartsWith _          -> "<startswith>"
-  | EndsWith _            -> "<endswith>"
-  | Concat (_, _)         -> "<concat>"
-  | Or (_, _)             -> "<or>"
-  | Optional _            -> "<optional>"
-  | KleeneStar _          -> "<kleenestar>"
-  | Repeat (_, _)         -> "<repeat>"
-  | RepeatAtLeast (_, _)  -> "<repeatatleast>"
-  | RepeatRange (_, _, _) -> "<repeatrange>"
+  | CharSet _             -> CharSet'
+  | Not _                 -> Not'
+  | And _                 -> And'
+  | StartsWith _          -> StartsWith'
+  | EndsWith _            -> EndsWith'
+  | Concat (_, _)         -> Concat'
+  | Or (_, _)             -> Or'
+  | Optional _            -> Optional'
+  | KleeneStar _          -> KleeneStar'
+  | Repeat (_, _)         -> Repeat'
+  | RepeatAtLeast (_, _)  -> RepeatAtLeast'
+  | RepeatRange (_, _, _) -> RepeatRange'
 
-let symbol_to_weight =
+let symbol_weights =
   [
-    ("<charset>"       , 1);
-    ("<not>"           , 1);
-    ("<and>"           , 1);
-    ("<startswith>"    , 2);
-    ("<endswith>"      , 2);
-    ("<concat>"        , 2);
-    ("<or>"            , 2);
-    ("<optional>"      , 2);
-    ("<kleenestar>"    , 2);
-    ("<repeat>"        , 2);
-    ("<repeatatleast>" , 2);
-    ("<repeatrange>"   , 2);
+    (CharSet'      , 1);
+    (Not'          , 1);
+    (And'          , 1);
+    (StartsWith'   , 2);
+    (EndsWith'     , 2);
+    (Concat'       , 2);
+    (Or'           , 2);
+    (Optional'     , 2);
+    (KleeneStar'   , 2);
+    (Repeat'       , 2);
+    (RepeatAtLeast', 2);
+    (RepeatRange'  , 2);
   ]
 
-let pick_symbol ws =
-  let total_weight = List.fold_left (fun acc (_, w) -> acc + w) 0 ws in
+let charset_weights =
+  [
+    (Char     , 1);
+    (Empty    , 1);
+    (Any      , 1);
+    (Digit    , 1);
+    (AnyLetter, 1);
+    (CapLetter, 1);
+    (LowLetter, 1);
+  ]
+
+(** [pick_weighted] randomly picks from a weighted list of symbols using the
+    provided symbol weights. *)
+let pick_weighted wl =
+  let total_weight =
+    List.fold_left (fun acc (_, w) -> acc + w) 0 wl in
   let random = Random.int total_weight in
   let rec weighted_random l weight_acc =
     match l with
@@ -73,4 +99,7 @@ let pick_symbol ws =
        if random < weight_acc' then sym
        else weighted_random xs weight_acc'
   in
-  weighted_random ws 0
+  weighted_random wl 0
+
+let pick_regex_symbol () = pick_weighted symbol_weights
+let pick_charset () = pick_weighted charset_weights
