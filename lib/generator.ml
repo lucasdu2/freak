@@ -22,14 +22,16 @@ let rec gen_regex depth : regex =
        let end_range = Random.int_in_range ~min:start_range ~max:30 in
        RepeatRange(gen_regex depth', start_range, end_range)
 
-let pick_random_chars () =
-  (* TODO *)
-  let _size = Random.int 5 in "a"
+let pick_random_chars_ascii () =
+  let size = Random.int 5 in
+  let get_random_char () = Random.int 256 |> Char.chr |> Char.escaped in
+  let rec aux s acc = if (s = 0) then acc
+                      else aux (s - 1) (acc ^ get_random_char ()) in
+  aux size ""
 
 let rec realize_regex_rust (r: regex) : string =
-  (* TODO: We should be able to produce options of discrete chars as well *)
   let realize_cs = function
-    | Char -> pick_random_chars ()
+    | Char -> pick_random_chars_ascii ()
     | Empty -> ""
     | Any -> "."
     | Digit -> "[0-9]"
