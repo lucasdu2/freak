@@ -5,22 +5,18 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github lucasdu2/freak))
 
-(authors "Author Name")
+(authors "Lucas Du")
 
-(maintainers "Maintainer Name")
+(maintainers "Lucas Du")
 
-(license LICENSE)
-
-(documentation https://url/to/documentation)
+(license MIT)
 
 (package
  (name freak)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "Fuzzing for regex engines")
+ (description "Fuzzing for regex engines")
  (depends ocaml dune)
  (tags
-  (topics "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
+  ("fuzzer" "regex")))
