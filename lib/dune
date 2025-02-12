@@ -1,2 +1,3 @@
 (library
- (name freak))
+ (name freak)
+ (libraries unix))
