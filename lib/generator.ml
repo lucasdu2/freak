@@ -60,6 +60,7 @@ let rec realize_rust_regex (r: regex) : string =
      realize_rust_regex p ^ (sprintf "{%d,%d}" startn endn)
 
 
-(** [gen_input] creates a byte array containing [size] random bytes. Note that
- a byte is represented by the OCaml [char] type in the [Bytes] module. *)
-let gen_ascii_input size = Bytes.init size (fun _ -> random_ascii_char ())
+(** [gen_ascii_input] creates a string containing [size] random bytes. Note that
+    a byte is represented by the [char] type in the [Bytes] module. *)
+let gen_ascii_input size =
+  Bytes.to_string (Bytes.init size (fun _ -> random_ascii_char ()))
