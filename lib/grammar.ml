@@ -10,11 +10,10 @@ type charset =
   | LowLetter
 
 (** [regex] is a type that represents the grammar of the regular expressions
-    we can generate. We stick to extended regular expressions, without certain
-    advanced features like backreferences or lookaround, i.e. we don't support
-    NOT over regexes that aren't character classes, CONTAINS,
-    etc. This means that our regexes can only recognize regular languages. This
-    follows the lead of engines like Google's RE2 and Rust's regex crate. *)
+    we can generate. We stick to "extended" regular expressions, without certain
+    advanced features like backreferences or lookaround, which means that our
+    regexes can only recognize regular languages. This follows the lead of
+    engines like Google's RE2 and Rust's regex crate. *)
 type regex =
   | CharSet of charset
   | Not of charset

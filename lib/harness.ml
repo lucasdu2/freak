@@ -28,7 +28,7 @@ let engine_wrapper_file = function
   | Go_regexp  -> raise (Harness_error "Unimplemented")
 
 let check_compiler (c : compiler) =
-  (0 = Sys.command(compiler_bin c))
+  (0 = Sys.command(sprintf "%s 1>/dev/null" (compiler_bin c)))
 
 let generate_wrapper_program (e : engine) (depth : int) =
   match e with
@@ -37,17 +37,30 @@ let generate_wrapper_program (e : engine) (depth : int) =
   | Go_regexp  -> raise (Harness_error "Unimplemented")
 
 let create_wrapper_file (e : engine) (content : string) =
-  let fd = Unix.openfile (engine_wrapper_file e) [O_CREAT; O_TRUNC] 644 in
+  let filename = engine_wrapper_file e in
+  (* NOTE: The file permissions must be in octal. *)
+  let fd = Unix.openfile filename [O_CREAT; O_WRONLY; O_TRUNC] 0o764 in
   let bcontent = Bytes.of_string content in
-  Unix.write fd bcontent (Bytes.length bcontent) 0
+  let _ = Unix.write fd bcontent 0 (Bytes.length bcontent) in
+  Unix.close fd
 
 let compile_wrapper_file (e : engine) =
   let cbin = e |> engine_compiler |> compiler_bin in
   let file = engine_wrapper_file e in
   match e with
   | Rust_regex ->
-     Sys.command(sprintf "/usr/bin/env %s %s" cbin file)
+     let _ = Sys.command(sprintf "/usr/bin/env %s %s" cbin file) in ()
   | _ -> raise (Harness_error "Unimplemented")
+
+(* TODO: An idea for parallelism: have threads on a single core concurrently
+   test inputs for one regex compiled for each engine under test. Different
+   cores should be running the same thing with different regexes compiled. This
+   avoids cross-core synchronization overhead for comparing outputs. *)
+
+let setup_wrapper (e : engine) (depth : int) =
+  (* TODO: Make a try/catch here, or whatever OCaml has... *)
+  create_wrapper_file e (generate_wrapper_program e depth);
+  compile_wrapper_file e
 
 (* TODO: Right now, the plan is simply to have a wrapper that takes in input
    strings as a CLI argument. This may not be the most efficient way to do
@@ -55,10 +68,5 @@ let compile_wrapper_file (e : engine) =
 let run_random_input (e : engine) =
   let wrapper = engine_wrapper_path e in
   Sys.command(sprintf "%s %s" wrapper (gen_ascii_input 1024))
-
-(* TODO: An idea for parallelism: have threads on a single core concurrently
-   test inputs for one regex compiled for each engine under test. Different
-   cores should be running the same thing with different regexes compiled. This
-   avoids cross-core synchronization overhead for comparing outputs. *)
 
 let compare_out = ()
