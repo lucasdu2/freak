@@ -1,15 +1,12 @@
-(** [Harness] is the module containing all the imperative, side-effecting code
-    needed to interact with the operating system and run the test harness. *)
-
-open Generator
+(** [Wrappers] contains the imperative, side-effecting code needed to interact
+    with a Unix-like operating system and run the test wrappers. *)
 open Grammar
-open Ascii
 open Printf
 
 exception Setup_error of string
 
 let check_exists (exe : string) : unit =
-  let cmd = Filename.quote_command exe [] in
+  let cmd = Filename.quote_command exe ~stdout:"/dev/null" [] in
   match Unix.system(cmd) with
   | WEXITED 0 -> ()
   | WEXITED _ ->
@@ -18,20 +15,17 @@ let check_exists (exe : string) : unit =
   | WSIGNALED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
   | WSTOPPED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
 
-module type Wrapper = sig
+module type WRAPPER = sig
   val realize_regex : regex -> string
   val setup : string -> string -> regex -> Unix.process_status
   val run : string-> string -> Unix.process_status
 end
 
-module Rust_regex : Wrapper = struct
+module Rust_regex : WRAPPER = struct
+  open Grammar
+  open Ascii
   let compiler = "rustc"
   let project_dir = "rust-regex-wrap"
-
-  (* TODO: Need to figure out Rust conventions here. *)
-  let executable parent_dir =
-    let exe = "rust_regex_wrap" in
-    sprintf "%s/%s/%s" parent_dir project_dir exe
 
   let rec realize_regex (r: regex) : string =
     let realize_cs = function
@@ -91,14 +85,17 @@ fn main() {
     check_exists("cargo");
     (* Create project directory *)
     let full_project_dir = sprintf "%s/%s" parent_dir project_dir in
-    Unix.mkdir full_project_dir 0o640;
+    (* TODO: Try to set up permissions (and general structure!) for these files
+       in a more principled way. *)
+    if (not (Sys.file_exists full_project_dir)) then
+      Unix.mkdir full_project_dir 0o777;
     (* Set up basic cargo project*)
-    let _ = Unix.system(Filename.quote_command "cargo init" [full_project_dir]) in
+    let _ = Unix.system(Filename.quote_command "cargo" ["init"; full_project_dir]) in
     (* Ensure required crates are installed *)
     Unix.chdir full_project_dir;
-    let _ = Unix.system(Filename.quote_command "cargo add" ["once_cell"]) in
-    let regex_crate_name = sprintf "regex @ %s" engine_version in
-    let _ = Unix.system(Filename.quote_command "cargo add" [regex_crate_name]) in
+    let _ = Unix.system(Filename.quote_command "cargo" ["add"; "once_cell"]) in
+    let regex_crate_name = sprintf "regex@%s" engine_version in
+    let _ = Unix.system(Filename.quote_command "cargo" ["add"; regex_crate_name]) in
     (* Write wrapper program to file *)
     let content = produce_program r in
     (* NOTE: src/main.rs is the cargo convention for entry point *)
@@ -108,11 +105,13 @@ fn main() {
     let bcontent = Bytes.of_string content in
     let _ = Unix.write fd bcontent 0 (Bytes.length bcontent) in
     Unix.close fd;
-    let compile_cmd = Filename.quote_command compiler [filename] in
-    Unix.system(compile_cmd)
+    let build_cmd = Filename.quote_command "cargo" ["build"] in
+    Unix.system(build_cmd)
 
   let run parent_dir input =
-    let cmd = Filename.quote_command (executable parent_dir) [input] in
+    let full_project_dir = sprintf "%s/%s" parent_dir project_dir in
+    Unix.chdir full_project_dir;
+    let cmd = Filename.quote_command "cargo" ["run"; input] in
     Unix.system(cmd)
 
 end
@@ -121,21 +120,3 @@ end
    test inputs for one regex compiled for each engine under test. Different
    cores should be running the same thing with different regexes compiled. This
    avoids cross-core synchronization overhead for comparing outputs. *)
-
-(* TODO: Finish this later... *)
-let run () =
-  let parent_dir = Unix.getcwd () in
-  let random_regex = gen_regex 12 in
-  match Rust_regex.setup parent_dir "1.11.1" random_regex with
-  | WEXITED 0 ->
-     for _ = 1 to 10000 do
-       (* TODO: Set up a timeout here and return failure if match takes too long. *)
-       match Rust_regex.run parent_dir (gen_ascii_input 1024) with
-       | WEXITED 0 -> ()
-       | _ -> ()
-     done
-  | _ -> ()
-
-
-
-let compare_out = ()
