@@ -1,6 +1,7 @@
 (** [Wrappers] contains the imperative, side-effecting code needed to interact
     with a Unix-like operating system and run the test wrappers. *)
 open Grammar
+open Ascii
 open Printf
 
 exception Setup_error of string
@@ -15,22 +16,27 @@ let check_exists (exe : string) : unit =
   | WSIGNALED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
   | WSTOPPED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
 
+(* TODO: Instead of returning a raw Unix.process_status, try to return some
+   option type defined in this module. *)
 module type WRAPPER = sig
   val realize_regex : regex -> string
-  val setup : string -> string -> regex -> Unix.process_status
-  val run : string-> string -> Unix.process_status
+  val setup_env : string -> string -> Unix.process_status
+  val pre_wrap : string -> regex -> Unix.process_status
+  val run_wrap : string-> string -> Unix.process_status
 end
 
 module Rust_regex : WRAPPER = struct
-  open Grammar
-  open Ascii
   let compiler = "rustc"
   let project_dir = "rust-regex-wrap"
 
   let rec realize_regex (r: regex) : string =
     let realize_cs = function
+      (* TODO: Make sure that special characters like [ ] or / \ are properly
+       escaped. *)
       | Char -> gen_ascii_option_string 5
-      | Empty -> ""
+      (* TODO: Should figure out how to handle this "empty" case; also how to
+         generally get random whitespace and newlines/returns. *)
+      | Empty -> " "
       | Any -> "."
       | Digit -> "[0-9]"
       | AnyLetter -> "[a-zA-Z]"
@@ -38,7 +44,7 @@ module Rust_regex : WRAPPER = struct
       | LowLetter -> "[a-z]"
     in
     match r with
-    | CharSet cs -> realize_cs cs
+    | CharSet cs -> "[" ^ realize_cs cs ^ "]"
     | Not cs -> "[^" ^ realize_cs cs ^ "]"
     | And (cs1, cs2) -> "[" ^ realize_cs cs1 ^ "&&" ^ realize_cs cs2 ^ "]"
     | StartsWith p -> "^" ^ realize_regex p
@@ -77,8 +83,10 @@ fn main() {
     }
 }" realr
 
-  (* [setup] contains all the ugly side-effecting imperative code needed. *)
-  let setup parent_dir engine_version r =
+  (* [setup_env] contains all the side-effecting imperative code needed to get
+     the Rust build environment --- i.e. the Rust compiler and the Cargo build
+     tool --- up and ready. *)
+  let setup_env parent_dir engine_version =
     (* Ensure compiler exists *)
     check_exists(compiler);
     (* Ensure cargo is installed *)
@@ -95,28 +103,36 @@ fn main() {
     Unix.chdir full_project_dir;
     let _ = Unix.system(Filename.quote_command "cargo" ["add"; "once_cell"]) in
     let regex_crate_name = sprintf "regex@%s" engine_version in
-    let _ = Unix.system(Filename.quote_command "cargo" ["add"; regex_crate_name]) in
+    Unix.system(Filename.quote_command "cargo" ["add"; regex_crate_name])
+
+  let pre_wrap parent_dir r =
+    let full_project_dir = sprintf "%s/%s" parent_dir project_dir in
     (* Write wrapper program to file *)
     let content = produce_program r in
     (* NOTE: src/main.rs is the cargo convention for entry point *)
-    let filename = sprintf "%s/%s/src/main.rs" parent_dir project_dir in
+    let filename = sprintf "%s/src/main.rs" full_project_dir in
     (* NOTE: The file permissions must be in octal. *)
     let fd = Unix.openfile filename [O_CREAT; O_WRONLY; O_TRUNC] 0o764 in
     let bcontent = Bytes.of_string content in
     let _ = Unix.write fd bcontent 0 (Bytes.length bcontent) in
     Unix.close fd;
+    Unix.chdir full_project_dir;
     let build_cmd = Filename.quote_command "cargo" ["build"] in
     Unix.system(build_cmd)
 
-  let run parent_dir input =
+  let run_wrap parent_dir input =
     let full_project_dir = sprintf "%s/%s" parent_dir project_dir in
-    Unix.chdir full_project_dir;
-    let cmd = Filename.quote_command "cargo" ["run"; input] in
+    (* NOTE: cargo builds executables in target/debug *)
+    let executable = sprintf "%s/target/debug/%s" full_project_dir project_dir in
+    let cmd = Filename.quote_command executable [input] in
     Unix.system(cmd)
-
 end
 
-(* TODO: An idea for parallelism: have threads on a single core concurrently
-   test inputs for one regex compiled for each engine under test. Different
-   cores should be running the same thing with different regexes compiled. This
-   avoids cross-core synchronization overhead for comparing outputs. *)
+module Go_regexp : WRAPPER = struct
+  let compiler = "go"
+  let project_dir = "go-regexp-wrap"
+
+  let realize_regex () = ()
+  let setup_env () = ()
+  let pre_wrap () = ()
+  let run_wrap () = ()

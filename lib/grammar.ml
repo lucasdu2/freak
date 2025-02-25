@@ -74,13 +74,13 @@ let symbol_weights =
 
 let charset_weights =
   [
-    (Char     , 1);
+    (Char     , 15);
     (Empty    , 1);
     (Any      , 1);
-    (Digit    , 1);
+    (Digit    , 3);
     (AnyLetter, 1);
-    (CapLetter, 1);
-    (LowLetter, 1);
+    (CapLetter, 2);
+    (LowLetter, 2);
   ]
 
 (** [pick_weighted] randomly picks from a weighted list of symbols using the
