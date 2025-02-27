@@ -206,8 +206,8 @@ import (
 
 func main() {
     input := os.Args[1]
-    r, _ := regexp.Compile(regexp.QuoteMeta(\"%s\"))
-    if (r.Match([]byte(input))) {
+    r := regexp.MustCompile(regexp.QuoteMeta(\"%s\"))
+    if (r.MatchString(input)) {
         fmt.Println(\"1\")
     } else {
         fmt.Println(\"0\")
