@@ -28,6 +28,8 @@ module type WRAPPER = sig
   val run_wrap : string-> string -> Unix.process_status
 end
 
+(* TODO P1: Need to fix Rust regex generation to stop failing various syntactic
+   checks. *)
 module Rust_regex : WRAPPER = struct
   let compiler = "rustc"
   let project_dir = "rust-regex-wrap"

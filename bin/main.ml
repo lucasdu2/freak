@@ -9,8 +9,14 @@ open Printf
 let gen_ascii_input_string size =
   String.init size (fun _ -> gen_ascii_char ())
 
+(* TODO: Let's output everything to stdout for now and pipe to a file for
+   debugging for now. It generally might be more efficient just to do batch
+   comparisons on file output rather than doing a comparison after each check.*)
+let _compare_out = ()
+
 let run () =
   let parent_dir = Unix.getcwd () in
+  (* TODO: Clean up _freak_wrappers first if it exists. *)
   let wrapper_dir = sprintf "%s/_freak_wrappers" parent_dir in
   (* TODO: As with all mkdir commands, figure out more principled way to set up
      permissions. *)
@@ -19,7 +25,8 @@ let run () =
   let _ = Rust_regex.setup_env wrapper_dir "1.11.1" in
   while true do
     let random_regex = gen_regex 12 in
-    print_endline (sprintf "Compiling regex %s" (Go_regexp.realize_regex random_regex));
+    (* NOTE: We use Go's realized regex as a readable regex for logs. *)
+    print_endline (sprintf "regex: %s" (Go_regexp.realize_regex random_regex));
     let _  = Go_regexp.pre_wrap wrapper_dir random_regex in
     let _  = Rust_regex.pre_wrap wrapper_dir random_regex in
     for _ = 1 to 100 do
@@ -33,7 +40,5 @@ let run () =
       print_endline "=====";
     done
   done
-
-let _compare_out = ()
 
 let () = run ()
