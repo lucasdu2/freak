@@ -1,5 +1,13 @@
 exception Grammar_error of string
 
+(* TODO: Modify this code to satisfy certain syntactic constraints:
+   - ^ only at beginning of a "block"
+   - $ only at end of a "block"
+   - concat and or must be between "blocks"
+   - at most one repetition operator at the end of a "block"
+ *)
+(* TODO: Allow charsets to be sequences of any of these...right now, we can only
+   have one of these options. Lots of syntactic stuff to fix...! *)
 type charset =
   | Char
   | Empty
@@ -14,7 +22,7 @@ type charset =
     advanced features like backreferences or lookaround, which means that our
     regexes can only recognize regular languages. This follows the lead of
     engines like Google's RE2 and Rust's regex crate. *)
-type regex =
+  and regex =
   | CharSet of charset
   | Not of charset
   | And of charset * charset
@@ -104,7 +112,7 @@ let pick_regex_symbol () = pick_weighted symbol_weights
 let pick_charset () = pick_weighted charset_weights
 
 (** [gen_regex] generates a random regex up to a depth of [depth] using a
-    define grammar and set of weights for the grammar rules. *)
+    defined grammar and set of weights for the grammar rules. *)
 let rec gen_regex depth : regex =
   if (depth = 0) then CharSet(pick_charset ())
   else

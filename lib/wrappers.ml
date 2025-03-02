@@ -14,7 +14,7 @@ let check_exists (exe : string) : unit =
   | WEXITED 0 -> ()
   | WEXITED _ ->
       raise (Setup_error
-              (sprintf "Cannot find %s; make sure it is installed and in your PATH." exe))
+              (sprintf "Cannot find %s; ensure it is installed." exe))
   | WSIGNALED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
   | WSTOPPED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
 
@@ -40,8 +40,16 @@ module Rust_regex : WRAPPER = struct
       (* TODO: There is probably more to do here. *)
       match c with
       | '\\' -> {|\\|}
-      | '{' -> {|{}|}
+      | '{' -> {|\{|}
       | '}' -> {|\}|}
+      | '[' -> {|\[|}
+      | ']' -> {|\]|}
+      | '(' -> {|\(|}
+      | ')' -> {|\)|}
+      | '+' -> {|\+|}
+      | '$' -> {|\$|}
+      | '^' -> {|\^|}
+      | '\"' -> {|\\"|}
       | _ -> (Bytes.make 1 c) |> Bytes.to_string
     in
     let rec aux str s =
@@ -72,12 +80,15 @@ module Rust_regex : WRAPPER = struct
     | EndsWith p -> realize_regex p ^ "$"
     | Concat (p1, p2) -> realize_regex p1 ^ realize_regex p2
     | Or (p1, p2) -> realize_regex p1 ^ "|" ^ realize_regex p2
-    | Optional p -> realize_regex p ^ "?"
-    | KleeneStar p -> realize_regex p ^ "*"
-    | Repeat (p, n) -> realize_regex p ^ (sprintf "{%d}" n)
-    | RepeatAtLeast (p, n) -> realize_regex p ^ (sprintf "{%d,}" n)
+    (* NOTE: Add parentheses around all repetition operators as a semi-hack that
+       prevents syntactic errors on nested repetitions (at the cost of adding
+       capture group semantics). *)
+    | Optional p -> "(" ^ realize_regex p ^ ")" ^ "?"
+    | KleeneStar p -> "(" ^ realize_regex p ^ ")" ^ "*"
+    | Repeat (p, n) -> "(" ^ realize_regex p ^ ")" ^ (sprintf "{%d}" n)
+    | RepeatAtLeast (p, n) -> "(" ^ realize_regex p ^ ")" ^ (sprintf "{%d,}" n)
     | RepeatRange (p, startn, endn) ->
-       realize_regex p ^ (sprintf "{%d,%d}" startn endn)
+       "(" ^ realize_regex p ^ ")" ^ (sprintf "{%d,%d}" startn endn)
 
   let produce_program r =
     let realr = realize_regex r in
@@ -158,6 +169,7 @@ module Go_regexp : WRAPPER = struct
       let c = gen_ascii_char () in
       match c with
       | '\\' -> {|\\|}
+      | '\"' -> {|\"|}
       | _ -> (Bytes.make 1 c) |> Bytes.to_string
     in
     let rec aux str s =
@@ -173,10 +185,10 @@ module Go_regexp : WRAPPER = struct
          generally get random whitespace and newlines/returns. *)
       | Empty -> " "
       | Any -> "."
-      | Digit -> "[0-9]"
-      | AnyLetter -> "[a-zA-Z]"
-      | CapLetter -> "[A-Z]"
-      | LowLetter -> "[a-z]"
+      | Digit -> "0-9"
+      | AnyLetter -> "a-zA-Z"
+      | CapLetter -> "A-Z"
+      | LowLetter -> "a-z"
     in
     match r with
     | CharSet cs ->
@@ -188,12 +200,15 @@ module Go_regexp : WRAPPER = struct
     | EndsWith p -> realize_regex p ^ "$"
     | Concat (p1, p2) -> realize_regex p1 ^ realize_regex p2
     | Or (p1, p2) -> realize_regex p1 ^ "|" ^ realize_regex p2
-    | Optional p -> realize_regex p ^ "?"
-    | KleeneStar p -> realize_regex p ^ "*"
-    | Repeat (p, n) -> realize_regex p ^ (sprintf "{%d}" n)
-    | RepeatAtLeast (p, n) -> realize_regex p ^ (sprintf "{%d,}" n)
+    (* NOTE: Add parentheses around all repetition operators as a semi-hack that
+       prevents syntactic errors on nested repetitions (at the cost of adding
+       capture group semantics). *)
+    | Optional p -> "(" ^ realize_regex p ^ ")" ^ "?"
+    | KleeneStar p -> "(" ^ realize_regex p ^ ")" ^ "*"
+    | Repeat (p, n) -> "(" ^ realize_regex p ^ ")" ^ (sprintf "{%d}" n)
+    | RepeatAtLeast (p, n) -> "(" ^ realize_regex p ^ ")" ^ (sprintf "{%d,}" n)
     | RepeatRange (p, startn, endn) ->
-       realize_regex p ^ (sprintf "{%d,%d}" startn endn)
+       "(" ^ realize_regex p ^ ")" ^ (sprintf "{%d,%d}" startn endn)
 
   let produce_program r =
     let realr = realize_regex r in
@@ -216,8 +231,6 @@ func main() {
     }
 }" realr
 
-  (* TODO: Can add an option to use a specific version of the regexp module;
-     this may require you to use some go mod command. *)
   let setup_env parent_dir engine_version =
     (* Ensure compiler exists *)
     check_exists(compiler);
