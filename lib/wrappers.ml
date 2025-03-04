@@ -65,17 +65,15 @@ module Rust_regex : WRAPPER = struct
          generally get random whitespace and newlines/returns. *)
       | Empty -> " "
       | Any -> "."
-      | Digit -> "[0-9]"
-      | AnyLetter -> "[a-zA-Z]"
-      | CapLetter -> "[A-Z]"
-      | LowLetter -> "[a-z]"
+      | Digit -> "0-9"
+      | AnyLetter -> "a-zA-Z"
+      | CapLetter -> "A-Z"
+      | LowLetter -> "a-z"
     in
     match r with
-    | CharSet cs ->
-       let set = realize_cs cs in
-       if ((String.length set) = 1) then set else "[" ^ set ^ "]"
+    | CharSet cs -> realize_cs cs
     | Not cs -> "[^" ^ realize_cs cs ^ "]"
-    | And (cs1, cs2) -> "[" ^ realize_cs cs1 ^ "&&" ^ realize_cs cs2 ^ "]"
+    | And (cs1, cs2) -> realize_cs cs1 ^ "&&" ^ realize_cs cs2
     | StartsWith p -> "^" ^ realize_regex p
     | EndsWith p -> realize_regex p ^ "$"
     | Concat (p1, p2) -> realize_regex p1 ^ realize_regex p2
@@ -169,7 +167,16 @@ module Go_regexp : WRAPPER = struct
       let c = gen_ascii_char () in
       match c with
       | '\\' -> {|\\|}
-      | '\"' -> {|\"|}
+      | '{' -> {|\{|}
+      | '}' -> {|\}|}
+      | '[' -> {|\[|}
+      | ']' -> {|\]|}
+      | '(' -> {|\(|}
+      | ')' -> {|\)|}
+      | '+' -> {|\+|}
+      | '$' -> {|\$|}
+      | '^' -> {|\^|}
+      | '\"' -> {|\\"|}
       | _ -> (Bytes.make 1 c) |> Bytes.to_string
     in
     let rec aux str s =
@@ -191,11 +198,9 @@ module Go_regexp : WRAPPER = struct
       | LowLetter -> "a-z"
     in
     match r with
-    | CharSet cs ->
-       let set = realize_cs cs in
-       if ((String.length set) = 1) then set else "[" ^ set ^ "]"
+    | CharSet cs -> realize_cs cs
     | Not cs -> "[^" ^ realize_cs cs ^ "]"
-    | And (cs1, cs2) -> "[" ^ realize_cs cs1 ^ "&&" ^ realize_cs cs2 ^ "]"
+    | And (cs1, cs2) -> realize_cs cs1 ^ "&&" ^ realize_cs cs2
     | StartsWith p -> "^" ^ realize_regex p
     | EndsWith p -> realize_regex p ^ "$"
     | Concat (p1, p2) -> realize_regex p1 ^ realize_regex p2
@@ -223,7 +228,7 @@ import (
 
 func main() {
     input := os.Args[1]
-    r := regexp.MustCompile(regexp.QuoteMeta(\"%s\"))
+    r := regexp.MustCompile(`%s`)
     if (r.MatchString(input)) {
         fmt.Println(\"1\")
     } else {

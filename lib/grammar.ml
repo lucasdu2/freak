@@ -127,9 +127,9 @@ let rec gen_regex depth : regex =
     | Or'            -> Or(gen_regex depth', gen_regex depth')
     | Optional'      -> Optional(gen_regex depth')
     | KleeneStar'    -> KleeneStar(gen_regex depth')
-    | Repeat'        -> Repeat(gen_regex depth', Random.int 30)
-    | RepeatAtLeast' -> RepeatAtLeast(gen_regex depth', Random.int 30)
+    | Repeat'        -> Repeat(gen_regex depth', Random.int 15)
+    | RepeatAtLeast' -> RepeatAtLeast(gen_regex depth', Random.int 5)
     | RepeatRange'   ->
-       let start_range = Random.int 10 in
-       let end_range = Random.int_in_range ~min:start_range ~max:30 in
+       let start_range = Random.int 5 in
+       let end_range = Random.int_in_range ~min:start_range ~max:15 in
        RepeatRange(gen_regex depth', start_range, end_range)

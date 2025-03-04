@@ -28,11 +28,12 @@ let run () =
   while true do
     let random_regex = gen_regex 7 in
     (* NOTE: We use Go's realized regex as a readable regex for logs. *)
-    print_endline (sprintf "TEST REGEX: %s" (Go_regexp.realize_regex random_regex));
+    print_endline (sprintf "TEST REGEX: %s"
+                     (Go_regexp.realize_regex random_regex));
     let _  = Go_regexp.pre_wrap wrapper_dir random_regex in
     let _  = Rust_regex.pre_wrap wrapper_dir random_regex in
     for _ = 1 to 100 do
-      (* TODO: Set up a timeout here and return failure if match takes too long. *)
+      (* TODO: Set up a timeout here. *)
       let input = (gen_ascii_input_string 32) in
       print_endline input;
       print_endline "rust regex: ";
