@@ -25,7 +25,7 @@ module type WRAPPER = sig
   val produce_program : regex -> string
   val setup_env : string -> string -> Unix.process_status
   val pre_wrap : string -> regex -> Unix.process_status
-  val run_wrap : string-> string -> Unix.process_status
+  val run_wrap : string-> string -> string
 end
 
 (* TODO P1: Need to fix Rust regex generation to stop failing various syntactic
@@ -155,7 +155,9 @@ fn main() {
     (* NOTE: cargo builds executables in target/debug *)
     let executable = sprintf "%s/target/debug/%s" full_project_dir project_dir in
     let cmd = Filename.quote_command executable [input] in
-    Unix.system(cmd)
+    let inp = Unix.open_process_in cmd in
+    let r = In_channel.input_all inp in
+    In_channel.close inp; r
 end
 
 module Go_regexp : WRAPPER = struct
@@ -273,5 +275,10 @@ func main() {
   let run_wrap parent_dir input =
     let executable = sprintf "%s/%s/%s" parent_dir project_dir project_dir in
     let cmd = Filename.quote_command executable [input] in
-    Unix.system(cmd)
+    (* TODO: Using this concurrent operation is causing some confusion in the
+       stderr output where things are getting mixed together. Try to find a way
+       around this. *)
+    let inp = Unix.open_process_in cmd in
+    let r = In_channel.input_all inp in
+    In_channel.close inp; r
 end
