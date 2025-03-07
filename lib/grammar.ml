@@ -1,16 +1,8 @@
 exception Grammar_error of string
 
-(* TODO: Modify this code to satisfy certain syntactic constraints:
-   - ^ only at beginning of a "block"
-   - $ only at end of a "block"
-   - concat and or must be between "blocks"
-   - at most one repetition operator at the end of a "block"
- *)
-(* TODO: Allow charsets to be sequences of any of these...right now, we can only
-   have one of these options. Lots of syntactic stuff to fix...! *)
 type charset =
-  | Char
-  | Empty
+  | None
+  | Chars of string
   | Any
   | Digit
   | AnyLetter
@@ -22,7 +14,8 @@ type charset =
     advanced features like backreferences or lookaround, which means that our
     regexes can only recognize regular languages. This follows the lead of
     engines like Google's RE2 and Rust's regex crate. *)
-  and regex =
+type regex =
+  | Empty
   | CharSet of charset
   | Not of charset
   | And of charset * charset
@@ -36,54 +29,25 @@ type charset =
   | RepeatAtLeast of regex * int
   | RepeatRange of regex * int * int
 
-type symbols =
-  | CharSet'
-  | Not'
-  | And'
-  | StartsWith'
-  | EndsWith'
-  | Concat'
-  | Or'
-  | Optional'
-  | KleeneStar'
-  | Repeat'
-  | RepeatAtLeast'
-  | RepeatRange'
-
-let symbol_of_regex = function
-  | CharSet _             -> CharSet'
-  | Not _                 -> Not'
-  | And _                 -> And'
-  | StartsWith _          -> StartsWith'
-  | EndsWith _            -> EndsWith'
-  | Concat (_, _)         -> Concat'
-  | Or (_, _)             -> Or'
-  | Optional _            -> Optional'
-  | KleeneStar _          -> KleeneStar'
-  | Repeat (_, _)         -> Repeat'
-  | RepeatAtLeast (_, _)  -> RepeatAtLeast'
-  | RepeatRange (_, _, _) -> RepeatRange'
-
-let symbol_weights =
+let regex_weights =
   [
-    (CharSet'      , 1);
-    (Not'          , 1);
-    (And'          , 1);
-    (StartsWith'   , 2);
-    (EndsWith'     , 2);
-    (Concat'       , 2);
-    (Or'           , 2);
-    (Optional'     , 2);
-    (KleeneStar'   , 2);
-    (Repeat'       , 2);
-    (RepeatAtLeast', 2);
-    (RepeatRange'  , 2);
+    (CharSet None             , 4);
+    (Not None                 , 2);
+    (And (None, None)         , 1);
+    (StartsWith Empty         , 2);
+    (EndsWith Empty           , 2);
+    (Concat (Empty, Empty)    , 3);
+    (Or (Empty, Empty)        , 2);
+    (Optional Empty           , 2);
+    (KleeneStar Empty         , 2);
+    (Repeat (Empty, 0)        , 2);
+    (RepeatAtLeast (Empty, 0) , 1);
+    (RepeatRange (Empty, 0, 0), 1);
   ]
 
 let charset_weights =
   [
-    (Char     , 15);
-    (Empty    , 1);
+    (Chars "" , 15);
     (Any      , 1);
     (Digit    , 3);
     (AnyLetter, 1);
@@ -108,8 +72,15 @@ let pick_weighted wl =
   in
   weighted_random wl 0
 
-let pick_regex_symbol () = pick_weighted symbol_weights
-let pick_charset () = pick_weighted charset_weights
+
+let pick_regex () = pick_weighted regex_weights
+let pick_charset () =
+  (* If charset picked is Chars, immediately generate a random option string as
+     an unescaped string. Further escaping should be done with regex is fully
+     realized for an engine. *)
+  match pick_weighted charset_weights with
+  | Chars _ -> Chars (Ascii.gen_ascii_string ((Random.int 5) + 1))
+  | cs -> cs
 
 (** [gen_regex] generates a random regex up to a depth of [depth] using a
     defined grammar and set of weights for the grammar rules. *)
@@ -117,19 +88,20 @@ let rec gen_regex depth : regex =
   if (depth = 0) then CharSet(pick_charset ())
   else
     let depth' = depth - 1 in
-    match pick_regex_symbol () with
-    | CharSet'       -> CharSet(pick_charset ())
-    | Not'           -> Not(pick_charset ())
-    | And'           -> Not(pick_charset ())
-    | StartsWith'    -> StartsWith(gen_regex depth')
-    | EndsWith'      -> EndsWith(gen_regex depth')
-    | Concat'        -> Concat(gen_regex depth', gen_regex depth')
-    | Or'            -> Or(gen_regex depth', gen_regex depth')
-    | Optional'      -> Optional(gen_regex depth')
-    | KleeneStar'    -> KleeneStar(gen_regex depth')
-    | Repeat'        -> Repeat(gen_regex depth', Random.int 15)
-    | RepeatAtLeast' -> RepeatAtLeast(gen_regex depth', Random.int 5)
-    | RepeatRange'   ->
+    match pick_regex () with
+    | Empty                 -> Empty
+    | CharSet _             -> CharSet(pick_charset ())
+    | Not _                 -> Not(pick_charset ())
+    | And (_, _)            -> Not(pick_charset ())
+    | StartsWith _          -> StartsWith(gen_regex depth')
+    | EndsWith _            -> EndsWith(gen_regex depth')
+    | Concat (_, _)         -> Concat(gen_regex depth', gen_regex depth')
+    | Or (_, _)             -> Or(gen_regex depth', gen_regex depth')
+    | Optional _            -> Optional(gen_regex depth')
+    | KleeneStar _          -> KleeneStar(gen_regex depth')
+    | Repeat (_, _)         -> Repeat(gen_regex depth', Random.int 15)
+    | RepeatAtLeast (_, _)  -> RepeatAtLeast(gen_regex depth', Random.int 5)
+    | RepeatRange (_, _, _) ->
        let start_range = Random.int 5 in
        let end_range = Random.int_in_range ~min:start_range ~max:15 in
        RepeatRange(gen_regex depth', start_range, end_range)

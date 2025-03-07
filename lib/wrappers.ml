@@ -1,7 +1,6 @@
 (** [Wrappers] contains the imperative, side-effecting code needed to interact
     with a Unix-like operating system and run the test wrappers. *)
 open Grammar
-open Ascii
 open Printf
 
 exception Setup_error of string
@@ -18,10 +17,8 @@ let check_exists (exe : string) : unit =
   | WSIGNALED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
   | WSTOPPED s -> raise (Setup_error (sprintf "%s killed by signal %d." exe s))
 
-let gen_ascii_string size =
-  let ascii_string_escaped () =
-    let c = gen_ascii_char () in
-    match c with
+let common_escaped_chars (unescaped_c: char) : string =
+    match unescaped_c with
     | '\\' -> {|\\|}
     | '{' -> {|\{|}
     | '}' -> {|\}|}
@@ -32,21 +29,17 @@ let gen_ascii_string size =
     | '+' -> {|\+|}
     | '$' -> {|\$|}
     | '^' -> {|\^|}
-    | '\"' -> {|\\"|}
-    | _ -> (Bytes.make 1 c) |> Bytes.to_string
-  in
-  let rec aux str s =
-    if s = 0 then str else
-      aux ((ascii_string_escaped ()) ^ str) (s - 1)
-  in
-  aux "" size
+    | '*' -> {|\*|}
+    | '?' -> {|\?|}
+    | c -> String.make 1 c
 
-let rec realize_re2_regex (r: regex) : string =
+let rec realize_re2_regex (r: regex) (f: string -> string) : string =
+  let escaper unescaped_s =
+    String.fold_left
+      (fun acc c -> acc ^ (common_escaped_chars c |> f)) "" unescaped_s in
   let realize_cs = function
-    | Char -> gen_ascii_string ((Random.int 5) + 1)
-    (* TODO: Should figure out how to handle this "empty" case; also how to
-        generally get random whitespace and newlines/returns. *)
-    | Empty -> " "
+    | None -> ""
+    | Chars options -> escaper options
     | Any -> "."
     | Digit -> "0-9"
     | AnyLetter -> "a-zA-Z"
@@ -54,22 +47,27 @@ let rec realize_re2_regex (r: regex) : string =
     | LowLetter -> "a-z"
   in
   match r with
+  | Empty -> ""
   | CharSet cs -> realize_cs cs
   | Not cs -> "[^" ^ realize_cs cs ^ "]"
   | And (cs1, cs2) -> realize_cs cs1 ^ "&&" ^ realize_cs cs2
-  | StartsWith p -> "^" ^ realize_re2_regex p
-  | EndsWith p -> realize_re2_regex p ^ "$"
-  | Concat (p1, p2) -> realize_re2_regex p1 ^ realize_re2_regex p2
-  | Or (p1, p2) -> realize_re2_regex p1 ^ "|" ^ realize_re2_regex p2
+  | StartsWith p -> "^" ^ realize_re2_regex p f
+  | EndsWith p -> realize_re2_regex p f ^ "$"
+  | Concat (p1, p2) ->
+     realize_re2_regex p1 f ^ realize_re2_regex p2 f
+  | Or (p1, p2) ->
+     realize_re2_regex p1 f ^ "|" ^ realize_re2_regex p2 f
   (* NOTE: Add parentheses around all repetition operators as a semi-hack that
       prevents syntactic errors on nested repetitions (at the cost of adding
       capture group semantics). *)
-  | Optional p -> "(" ^ realize_re2_regex p ^ ")" ^ "?"
-  | KleeneStar p -> "(" ^ realize_re2_regex p ^ ")" ^ "*"
-  | Repeat (p, n) -> "(" ^ realize_re2_regex p ^ ")" ^ (sprintf "{%d}" n)
-  | RepeatAtLeast (p, n) -> "(" ^ realize_re2_regex p ^ ")" ^ (sprintf "{%d,}" n)
+  | Optional p -> "(" ^ realize_re2_regex p f ^ ")" ^ "?"
+  | KleeneStar p -> "(" ^ realize_re2_regex p f ^ ")" ^ "*"
+  | Repeat (p, n) ->
+     "(" ^ realize_re2_regex p f ^ ")" ^ (sprintf "{%d}" n)
+  | RepeatAtLeast (p, n) ->
+     "(" ^ realize_re2_regex p f ^ ")" ^ (sprintf "{%d,}" n)
   | RepeatRange (p, startn, endn) ->
-      "(" ^ realize_re2_regex p ^ ")" ^ (sprintf "{%d,%d}" startn endn)
+      "(" ^ realize_re2_regex p f ^ ")" ^ (sprintf "{%d,%d}" startn endn)
 
 let construct_path parent child = sprintf "%s/%s" parent child
 
@@ -80,7 +78,7 @@ let run_wrapper_exe exe input =
       around this. *)
   let inp = Unix.open_process_in cmd in
   let r = In_channel.input_line inp in
-  In_channel.close inp;
+  let _ = Unix.close_process_in inp in
   match r with
   | Some out -> out
   | None -> "error"
@@ -109,7 +107,11 @@ module Rust_regex : WRAPPER = struct
   let wrapper_exec_full parent_dir =
     sprintf "%s/%s/target/debug/%s" parent_dir wrapper_name wrapper_name
 
-  let realize_regex = realize_re2_regex
+  let extra_escapes = function
+    | {|#|} -> {|\#|}
+    | s -> s
+  let realize_regex r =
+    realize_re2_regex r extra_escapes
 
   let produce_program r =
     let realr = realize_regex r in
@@ -122,7 +124,7 @@ use {
 };
 
 fn matcher(haystack: &str) -> bool {
-    static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r\"%s\").unwrap());
+    static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#\"%s\"#).unwrap());
     RE.is_match(haystack)
 }
 
@@ -181,7 +183,13 @@ module Go_regexp : WRAPPER = struct
   let wrapper_exec_full parent_dir =
     sprintf "%s/%s/%s" parent_dir wrapper_name wrapper_name
 
-  let realize_regex = realize_re2_regex
+  let extra_escapes = function
+    (* NOTE: Unfortunately, there's no way to handle backticks elegantly in
+     Go's raw string syntax (which uses backticks), so here's a nice hack :) *)
+    | {|`|} -> {|` + "`" +`|}
+    | s -> s
+  let realize_regex r =
+    realize_re2_regex r extra_escapes
 
   let produce_program r =
     let realr = realize_regex r in

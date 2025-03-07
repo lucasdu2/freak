@@ -1,6 +1,5 @@
 (* open Eio *) (* TODO: Implement concurrency/parallelism later *)
 (* open Cmdliner *)
-(* open Uuidm *)
 open Freak.Wrappers
 open Freak.Grammar
 open Freak.Ascii
@@ -23,15 +22,15 @@ let run () =
   let mismatch_dir = sprintf "%s/_mismatches_found" cwd in
   Unix.mkdir mismatch_dir 0o777;
   while true do
+    (* TODO: Ideally, make regex generation depth customizable in the CLI. *)
     let random_regex = gen_regex 5 in
-    let realized_regex = realize_re2_regex random_regex in
+    (* NOTE: Here, we use the identity function for the extra escapes function
+       argument, since we just want to use the common escaped characters. *)
+    let realized_regex = realize_re2_regex random_regex (fun s -> s) in
     let _  = Go_regexp.pre_wrap wrapper_dir random_regex in
     let _  = Rust_regex.pre_wrap wrapper_dir random_regex in
     for _ = 1 to 100 do
       let input = (gen_ascii_input_string 64) in
-      (* TODO: Read results from stdout file descriptor, do live multithreaded
-         comparison for each input. Save full inputs and wrappers for each
-         discrepancy. *)
       let rust_regex_out = Rust_regex.run_wrap wrapper_dir input in
       let go_regexp_out = Go_regexp.run_wrap wrapper_dir input in
       if not (String.equal rust_regex_out go_regexp_out) then
@@ -42,7 +41,17 @@ let run () =
              string (to try and maintain uniqueness). *)
           let regex_mismatch_dir =
             let b64enc_regex = Filename.quote (Base64.encode_exn realized_regex) in
-            sprintf "%s/%s" mismatch_dir b64enc_regex in
+            (* Replace '/' with "(backslash)" *)
+            (* NOTE: This replacement is only sufficient on Linux/Unix --- there
+               is a larger set of disallowed filename characters on Windows. *)
+            let b64enc_final =
+              (String.fold_left
+                 (fun acc c ->
+                   if Char.equal c '/' then
+                     acc ^ "(backslash)"
+                   else acc ^ String.make 1 c)
+                 "" b64enc_regex) in
+            sprintf "%s/%s" mismatch_dir b64enc_final in
           if not (Sys.file_exists regex_mismatch_dir) then
             begin
               Unix.mkdir regex_mismatch_dir 0o777;
