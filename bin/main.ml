@@ -1,4 +1,4 @@
-(* open Eio *) (* TODO: Implement concurrency/parallelism later *)
+open Eio
 (* open Cmdliner *)
 open Freak.Wrappers
 open Freak.Grammar
@@ -8,29 +8,41 @@ open Printf
 let gen_ascii_input_string size =
   String.init size (fun _ -> gen_ascii_char ())
 
-let run () =
-  let cwd = Unix.getcwd () in
-  let wrapper_dir = sprintf "%s/_freak_wrappers" cwd in
-  (* Clean up _freak_wrappers first if it exists *)
-  if Sys.file_exists(wrapper_dir) then
-    let _ = Unix.system (Filename.quote_command "rm" ["-rf"; wrapper_dir]) in ();
+let create_dir_clean dirname =
+  (* Clean up directory first if it already exists *)
+  if Sys.file_exists(dirname) then
+    let _ = Unix.system (Filename.quote_command "rm" ["-rf"; dirname]) in ();
   (* TODO: As with all mkdir commands, figure out more principled way to set up
      permissions. *)
-  Unix.mkdir wrapper_dir 0o777;
+  Unix.mkdir dirname 0o777
+
+let uuid = Uuidm.v4_gen (Random.State.make_self_init ())
+
+let run (fiber_index : int) =
+  print_endline (sprintf "spawning fiber %d" fiber_index);
+  let cwd = Unix.getcwd () in
+  let uuid = Uuidm.to_string (uuid ()) in
+  let wrapper_dir = sprintf "%s/_freak_wrappers_%s" cwd uuid in
+  print_endline (sprintf "creating wrapper dir at %s" wrapper_dir);
+  create_dir_clean wrapper_dir;
+  print_endline (sprintf "created wrapper dir at %s" wrapper_dir);
+  let mismatch_dir = sprintf "%s/_mismatches_found_%s" cwd uuid in
+  print_endline (sprintf "creating mismatch dir at %s" mismatch_dir);
+  create_dir_clean mismatch_dir;
+  print_endline (sprintf "created mismatch dir at %s" mismatch_dir);
+  (* TODO: Allow the engine versions to be user-specified *)
   let _ = Go_regexp.setup_env wrapper_dir "" in
   let _ = Rust_regex.setup_env wrapper_dir "1.11.1" in
-  let mismatch_dir = sprintf "%s/_mismatches_found" cwd in
-  Unix.mkdir mismatch_dir 0o777;
+
   while true do
-    (* TODO: Ideally, make regex generation depth customizable in the CLI. *)
     let random_regex = gen_regex 5 in
     (* NOTE: Here, we use the identity function for the extra escapes function
        argument, since we just want to use the common escaped characters. *)
     let realized_regex = realize_re2_regex random_regex (fun s -> s) in
     let _  = Go_regexp.pre_wrap wrapper_dir random_regex in
     let _  = Rust_regex.pre_wrap wrapper_dir random_regex in
-    for _ = 1 to 100 do
-      let input = (gen_ascii_input_string 64) in
+    for _ = 1 to 2048 do
+      let input = (gen_ascii_input_string 128) in
       let rust_regex_out = Rust_regex.run_wrap wrapper_dir input in
       let go_regexp_out = Go_regexp.run_wrap wrapper_dir input in
       if not (String.equal rust_regex_out go_regexp_out) then
@@ -78,4 +90,7 @@ let run () =
     done
   done
 
-let () = run ()
+let () =
+  (* TODO: Ideally, make regex generation depth customizable in the CLI. *)
+  let num_fibers = 3 in
+  Fiber.all (List.init num_fibers (fun idx -> run idx))

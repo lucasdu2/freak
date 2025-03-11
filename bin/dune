@@ -1,4 +1,4 @@
 (executable
  (public_name freak)
  (name main)
- (libraries freak cmdliner base64))
+ (libraries freak cmdliner base64 uuidm eio_main))
