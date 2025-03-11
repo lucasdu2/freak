@@ -1,4 +1,4 @@
-open Eio
+(* open Eio *)
 (* open Cmdliner *)
 open Freak.Wrappers
 open Freak.Grammar
@@ -8,25 +8,24 @@ open Printf
 let gen_ascii_input_string size =
   String.init size (fun _ -> gen_ascii_char ())
 
+(* TODO: As with all mkdir commands, figure out more principled way to set up
+   permissions. *)
 let create_dir_clean dirname =
   (* Clean up directory first if it already exists *)
-  if Sys.file_exists(dirname) then
-    let _ = Unix.system (Filename.quote_command "rm" ["-rf"; dirname]) in ();
-  (* TODO: As with all mkdir commands, figure out more principled way to set up
-     permissions. *)
-  Unix.mkdir dirname 0o777
+  (if Sys.file_exists(dirname) then
+    let _ = Unix.system (Filename.quote_command "rm" ["-rf"; dirname]) in ());
+  Unix.mkdir dirname 0o777;
+  print_endline (sprintf "created directory %s" dirname)
 
-let uuid = Uuidm.v4_gen (Random.State.make_self_init ())
-
-let run (fiber_index : int) =
-  print_endline (sprintf "spawning fiber %d" fiber_index);
+let run () =
+  let thread_id = Thread.self () |> Thread.id in
+  print_endline (sprintf "spawning thread %d" thread_id);
   let cwd = Unix.getcwd () in
-  let uuid = Uuidm.to_string (uuid ()) in
-  let wrapper_dir = sprintf "%s/_freak_wrappers_%s" cwd uuid in
+  let wrapper_dir = sprintf "%s/_freak_wrappers_%d" cwd thread_id in
   print_endline (sprintf "creating wrapper dir at %s" wrapper_dir);
   create_dir_clean wrapper_dir;
   print_endline (sprintf "created wrapper dir at %s" wrapper_dir);
-  let mismatch_dir = sprintf "%s/_mismatches_found_%s" cwd uuid in
+  let mismatch_dir = sprintf "%s/_mismatches_found_%d" cwd thread_id in
   print_endline (sprintf "creating mismatch dir at %s" mismatch_dir);
   create_dir_clean mismatch_dir;
   print_endline (sprintf "created mismatch dir at %s" mismatch_dir);
@@ -91,6 +90,9 @@ let run (fiber_index : int) =
   done
 
 let () =
+  print_endline "hellloooooooo";
   (* TODO: Ideally, make regex generation depth customizable in the CLI. *)
-  let num_fibers = 3 in
-  Fiber.all (List.init num_fibers (fun idx -> run idx))
+  let th1 = Thread.create run () in
+  let th2 = Thread.create run () in
+  Thread.join th1;
+  Thread.join th2
