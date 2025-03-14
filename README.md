@@ -10,7 +10,7 @@ In general, the Dockerfile outlines the prerequisites for a working build enviro
 2. Install Rust using [rustup](https://rustup.rs/). This will also install the cargo build and package manager.
 3. [Install Go](https://go.dev/doc/install) and initialize it properly, i.e. add the Go binary path to the PATH environment variable.
 4. Copy/clone this repository and enter the directory.
-5. Install the required dependencies from opam: dune, base64. This can be done with `opam install <package-name>`.
+5. Install the required dependencies from opam: dune, base64, eio_main. This can be done with `opam install <package-name>`.
 
 ### Build freak
 When you are in the freak directory (with all dependencies installed from opam), you should be able to build the project by simply running `dune build`.

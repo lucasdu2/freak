@@ -1,0 +1,187 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{13}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{} and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showURL}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showURL #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Aschermann et~al\mbox{.}(2019)]%
+        {aschermann2019nautilus}
+\bibfield{author}{\bibinfo{person}{Cornelius Aschermann},
+  \bibinfo{person}{Tommaso Frassetto}, \bibinfo{person}{Thorsten Holz},
+  \bibinfo{person}{Patrick Jauernig}, \bibinfo{person}{Ahmad-Reza Sadeghi},
+  {and} \bibinfo{person}{Daniel Teuchert}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{NAUTILUS: Fishing for deep bugs with grammars.}. In
+  \bibinfo{booktitle}{\emph{NDSS}}.
+\newblock
+
+
+\bibitem[Chen et~al\mbox{.}(2020)]%
+        {chen2020multi}
+\bibfield{author}{\bibinfo{person}{Qiaochu Chen}, \bibinfo{person}{Xinyu Wang},
+  \bibinfo{person}{Xi Ye}, \bibinfo{person}{Greg Durrett}, {and}
+  \bibinfo{person}{Isil Dillig}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Multi-modal synthesis of regular expressions}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 41st ACM SIGPLAN conference on
+  programming language design and implementation}}. \bibinfo{pages}{487--502}.
+\newblock
+
+
+\bibitem[Claessen and Hughes(2000)]%
+        {claessen2000quickcheck}
+\bibfield{author}{\bibinfo{person}{Koen Claessen} {and} \bibinfo{person}{John
+  Hughes}.} \bibinfo{year}{2000}\natexlab{}.
+\newblock \showarticletitle{QuickCheck: a lightweight tool for random testing
+  of Haskell programs}. In \bibinfo{booktitle}{\emph{Proceedings of the fifth
+  ACM SIGPLAN international conference on Functional programming}}.
+  \bibinfo{pages}{268--279}.
+\newblock
+
+
+\bibitem[Crump(2024)]%
+        {crump2024regexfuzzing}
+\bibfield{author}{\bibinfo{person}{Addison Crump}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{title}{Ring Around The Regex: Lessons learned from fuzzing
+  regex libraries (Part 1)}.
+\newblock
+  \bibinfo{howpublished}{\url{https://secret.club/2024/06/30/ring-around-the-regex-1.html}}.
+\newblock
+\newblock
+\shownote{Accessed: 2025-02-16}.
+
+
+\bibitem[Dureg{\aa}rd et~al\mbox{.}(2012)]%
+        {duregaard2012feat}
+\bibfield{author}{\bibinfo{person}{Jonas Dureg{\aa}rd}, \bibinfo{person}{Patrik
+  Jansson}, {and} \bibinfo{person}{Meng Wang}.}
+  \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{Feat: functional enumeration of algebraic types}.
+\newblock \bibinfo{journal}{\emph{ACM SIGPLAN Notices}} \bibinfo{volume}{47},
+  \bibinfo{number}{12} (\bibinfo{year}{2012}), \bibinfo{pages}{61--72}.
+\newblock
+
+
+\bibitem[Godefroid et~al\mbox{.}(2008)]%
+        {godefroid2008grammar}
+\bibfield{author}{\bibinfo{person}{Patrice Godefroid}, \bibinfo{person}{Adam
+  Kiezun}, {and} \bibinfo{person}{Michael~Y Levin}.}
+  \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{Grammar-based whitebox fuzzing}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 29th ACM SIGPLAN conference on
+  programming language design and implementation}}. \bibinfo{pages}{206--215}.
+\newblock
+
+
+\bibitem[McLaughlin et~al\mbox{.}(2022)]%
+        {mclaughlin2022regulator}
+\bibfield{author}{\bibinfo{person}{Robert McLaughlin}, \bibinfo{person}{Fabio
+  Pagani}, \bibinfo{person}{Noah Spahn}, \bibinfo{person}{Christopher Kruegel},
+  {and} \bibinfo{person}{Giovanni Vigna}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Regulator: Dynamic Analysis to Detect
+  $\{$ReDoS$\}$}. In \bibinfo{booktitle}{\emph{31st USENIX Security Symposium
+  (USENIX Security 22)}}. \bibinfo{pages}{4219--4235}.
+\newblock
+
+
+\bibitem[Pavese et~al\mbox{.}(2018)]%
+        {pavese2018inputs}
+\bibfield{author}{\bibinfo{person}{Esteban Pavese}, \bibinfo{person}{Ezekiel
+  Soremekun}, \bibinfo{person}{Nikolas Havrikov}, \bibinfo{person}{Lars
+  Grunske}, {and} \bibinfo{person}{Andreas Zeller}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Inputs from hell: generating uncommon inputs from
+  common samples}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:1812.07525}}
+  (\bibinfo{year}{2018}).
+\newblock
+
+
+\bibitem[Shen et~al\mbox{.}(2018)]%
+        {shen2018rescue}
+\bibfield{author}{\bibinfo{person}{Yuju Shen}, \bibinfo{person}{Yanyan Jiang},
+  \bibinfo{person}{Chang Xu}, \bibinfo{person}{Ping Yu},
+  \bibinfo{person}{Xiaoxing Ma}, {and} \bibinfo{person}{Jian Lu}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{ReScue: crafting regular expression DoS attacks}.
+  In \bibinfo{booktitle}{\emph{Proceedings of the 33rd ACM/IEEE International
+  Conference on Automated Software Engineering}}. \bibinfo{pages}{225--235}.
+\newblock
+
+
+\bibitem[Srivastava and Payer(2021)]%
+        {srivastava2021gramatron}
+\bibfield{author}{\bibinfo{person}{Prashast Srivastava} {and}
+  \bibinfo{person}{Mathias Payer}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Gramatron: Effective grammar-aware fuzzing}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 30th acm sigsoft international
+  symposium on software testing and analysis}}. \bibinfo{pages}{244--256}.
+\newblock
+
+
+\bibitem[Veanes et~al\mbox{.}(2010)]%
+        {veanes2010rex}
+\bibfield{author}{\bibinfo{person}{Margus Veanes}, \bibinfo{person}{Peli
+  De~Halleux}, {and} \bibinfo{person}{Nikolai Tillmann}.}
+  \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{Rex: Symbolic regular expression explorer}. In
+  \bibinfo{booktitle}{\emph{2010 Third International Conference on Software
+  Testing, Verification and Validation}}. IEEE, \bibinfo{pages}{498--507}.
+\newblock
+
+
+\bibitem[Winterer and Su(2024)]%
+        {winterer2024validating}
+\bibfield{author}{\bibinfo{person}{Dominik Winterer} {and}
+  \bibinfo{person}{Zhendong Su}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Validating SMT Solvers for Correctness and
+  Performance via Grammar-Based Enumeration}.
+\newblock \bibinfo{journal}{\emph{Proceedings of the ACM on Programming
+  Languages}} \bibinfo{volume}{8}, \bibinfo{number}{OOPSLA2}
+  (\bibinfo{year}{2024}), \bibinfo{pages}{2378--2401}.
+\newblock
+
+
+\bibitem[Yang et~al\mbox{.}(2011)]%
+        {yang2011finding}
+\bibfield{author}{\bibinfo{person}{Xuejun Yang}, \bibinfo{person}{Yang Chen},
+  \bibinfo{person}{Eric Eide}, {and} \bibinfo{person}{John Regehr}.}
+  \bibinfo{year}{2011}\natexlab{}.
+\newblock \showarticletitle{Finding and understanding bugs in C compilers}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 32nd ACM SIGPLAN conference on
+  Programming language design and implementation}}. \bibinfo{pages}{283--294}.
+\newblock
+
+
+\end{thebibliography}

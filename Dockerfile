@@ -43,7 +43,7 @@ RUN apt-get clean
 WORKDIR /freak
 COPY . /freak
 # Install freak dependencies
-RUN opam install dune base64
+RUN opam install dune base64 eio_main
 
 # Default command (runs bash)
 CMD ["/bin/bash"]

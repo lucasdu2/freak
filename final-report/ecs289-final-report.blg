@@ -1,0 +1,77 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: ecs289-final-report.aux
+The style file: ACM-Reference-Format.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: main.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+Warning--empty publisher in aschermann2019nautilus
+Warning--empty address in aschermann2019nautilus
+Warning--page numbers missing in both pages and numpages fields in aschermann2019nautilus
+Warning--empty publisher in chen2020multi
+Warning--empty address in chen2020multi
+Warning--empty publisher in claessen2000quickcheck
+Warning--empty address in claessen2000quickcheck
+Warning--empty publisher in godefroid2008grammar
+Warning--empty address in godefroid2008grammar
+Warning--empty publisher in mclaughlin2022regulator
+Warning--empty address in mclaughlin2022regulator
+Warning--no number and no volume in pavese2018inputs
+Warning--page numbers missing in both pages and numpages fields in pavese2018inputs
+Warning--empty publisher in shen2018rescue
+Warning--empty address in shen2018rescue
+Warning--empty publisher in srivastava2021gramatron
+Warning--empty address in srivastava2021gramatron
+Warning--empty publisher in veanes2010rex
+Warning--empty address in veanes2010rex
+Warning--empty publisher in yang2011finding
+Warning--empty address in yang2011finding
+You've used 13 entries,
+            6056 wiz_defined-function locations,
+            1561 strings with 20673 characters,
+and the built_in function-call counts, 15706 in all, are:
+= -- 1844
+> -- 493
+< -- 0
++ -- 166
+- -- 169
+* -- 1066
+:= -- 1479
+add.period$ -- 65
+call.type$ -- 13
+change.case$ -- 99
+chr.to.int$ -- 13
+cite$ -- 34
+duplicate$ -- 1477
+empty$ -- 1030
+format.name$ -- 217
+if$ -- 3813
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 57
+newline$ -- 136
+num.names$ -- 91
+pop$ -- 642
+preamble$ -- 1
+purify$ -- 203
+quote$ -- 0
+skip$ -- 552
+stack$ -- 0
+substring$ -- 1170
+swap$ -- 143
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 348
+warning$ -- 21
+while$ -- 85
+width$ -- 0
+write$ -- 276
+(There were 21 warnings)

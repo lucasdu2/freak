@@ -21,7 +21,8 @@ let run cwd =
   let thread_id = Thread.self () |> Thread.id in
   let wrapper_dir = sprintf "%s/_freak_wrappers_%d" cwd thread_id in
   let mismatch_dir = sprintf "%s/_mismatches_found_%d" cwd thread_id in
-  while true do
+  let rec run_aux (regex_count : int) : unit =
+    print_endline (sprintf "thread %d @ regex_count=%d" thread_id regex_count);
     let random_regex = gen_regex 5 in
     (* NOTE: Here, we use the identity function for the extra escapes function
        argument, since we just want to use the common escaped characters. *)
@@ -74,8 +75,10 @@ let run cwd =
           let _ = Unix.write fd b_mismatch_out 0 (Bytes.length b_mismatch_out) in
           Unix.close fd
         end
-    done
-  done
+    done;
+    run_aux (regex_count + 1)
+  in
+  run_aux 1
 
 let () =
   let cwd = Unix.getcwd () in
