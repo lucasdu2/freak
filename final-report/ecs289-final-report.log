@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2025.2.3)  14 MAR 2025 11:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2025.2.3)  14 MAR 2025 11:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -981,7 +981,7 @@ LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
  [2.2] [3.3] [4.4]
 LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/it' will be
 (Font)              scaled to size 10.0pt on input line 125.
- [5.5]
+ [5.5] [6.6]
 LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 1
 83.
 
@@ -994,7 +994,6 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `zi4' (encoding: TS1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
- [6.6]
 LaTeX Font Info:    Trying to load font information for TS1+LinuxLibertineT-TLF
  on input line 187.
 
@@ -1026,7 +1025,7 @@ Package rerunfilecheck Info: File `ecs289-final-report.out' has not changed.
 Here is how much of TeX's memory you used:
  20870 strings out of 480247
  338993 string characters out of 5896152
- 682356 words of memory out of 5000000
+ 682357 words of memory out of 5000000
  37861 multiletter control sequences out of 15000+600000
  630719 words of font info for 320 fonts, out of 8000000 for 9000
  175 hyphenation exceptions out of 8191
@@ -1049,7 +1048,7 @@ ine/LinLibertineT.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/liberti
 ne/LinLibertineTB.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/liberti
 ne/LinLibertineTI.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/newtx/t
 xsys.pfb>
-Output written on ecs289-final-report.pdf (9 pages, 454851 bytes).
+Output written on ecs289-final-report.pdf (9 pages, 454923 bytes).
 PDF statistics:
  246 PDF objects out of 1000 (max. 8388607)
  206 compressed objects within 3 object streams

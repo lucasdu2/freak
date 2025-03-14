@@ -133,7 +133,7 @@ Finally, there is work in the property-based testing space on more effective and
 
 \section{Experimental Evaluation}
 \subsection{Methodology}
-We ran the implemented fuzzing framework on two different real-world regex engines---Rust's regex crate and Go's regexp module---for around 20 hours. We generated random, valid regexes and ran 2,048 random input strings through each of them, comparing the outputs between the engines to check for inconsistencies.
+We ran the implemented fuzzing framework on two different real-world regex engines---Rust's regex crate and Go's regexp module---for around 20 hours. We generated random, valid regexes and ran 2,048 random input strings through each of them, comparing the outputs between the engines to check for inconsistencies. Around 33,000 regexes were generated and tested in the 20 hour testing run.
 
 Our regex generator had max regex depth set to 5. Weights were hand-set as follows (in OCaml code):
 
