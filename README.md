@@ -16,4 +16,4 @@ In general, the Dockerfile outlines the prerequisites for a working build enviro
 When you are in the freak directory (with all dependencies installed from opam), you should be able to build the project by simply running `dune build`.
 
 ### Run freak
-You should be able to run freak after building it by invoking `dune exec -- freak`. The test harness will create a "_freak_wrappers_<id>" folder for each thread it spawns, where <id> ranges from 1 to the number of threads spawned. Mismatches that are found will be saved in a corresponding "_mismatches_found_<id>" folder.
+You should be able to run freak after building it by invoking `dune exec -- freak`. The test harness will create a `_freak_wrappers_(id)` folder for each thread it spawns, where (id) ranges from 1 to the number of threads spawned. Mismatches that are found will be saved in a corresponding `_mismatches_found_(id)` folder.
