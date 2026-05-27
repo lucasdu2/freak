@@ -76,7 +76,7 @@ let pick_weighted wl =
 let pick_regex () = pick_weighted regex_weights
 let pick_charset () =
   (* If charset picked is Chars, immediately generate a random option string as
-     an unescaped string. Further escaping should be done with regex is fully
+     an unescaped string. Further escaping should be done when regex is fully
      realized for an engine. *)
   match pick_weighted charset_weights with
   | Chars _ -> Chars (Ascii.gen_ascii_string ((Random.int 5) + 1))
